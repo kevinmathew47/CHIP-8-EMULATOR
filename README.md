@@ -6,7 +6,10 @@
 
 Built by **Kevin Mathew** for TatHack '26 · PS1
 
-[![Play in browser](https://img.shields.io/badge/▶_Play_in_browser-ffb547?style=for-the-badge)](https://kevinmathew47.github.io/CHIP-8-EMULATOR/)
+### 🔴 Live demo: **[kevinmathew47.github.io/CHIP-8-EMULATOR](https://kevinmathew47.github.io/CHIP-8-EMULATOR)**
+<sub>Runs in any modern browser, desktop or phone. No install.</sub>
+
+[![Play in browser](https://img.shields.io/badge/▶_Play_in_browser-ffb547?style=for-the-badge)](https://kevinmathew47.github.io/CHIP-8-EMULATOR)
 &nbsp;
 ![Tests](https://img.shields.io/badge/tests-13%2F13_passing-4ade80?style=for-the-badge)
 &nbsp;
@@ -24,7 +27,7 @@ Built by **Kevin Mathew** for TatHack '26 · PS1
 
 | | |
 |---|---|
-| 🌐 **Browser** | Open **[kevinmathew47.github.io/CHIP-8-EMULATOR](https://kevinmathew47.github.io/CHIP-8-EMULATOR/)**, pick a game, click the screen |
+| 🌐 **Browser** | Open **[kevinmathew47.github.io/CHIP-8-EMULATOR](https://kevinmathew47.github.io/CHIP-8-EMULATOR)**, pick a game, click the screen |
 | 🪟 **Windows** | Install [MSYS2](https://www.msys2.org/) → `pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-SDL2 make` → `make` → double-click **`play.bat`** |
 | 🐧 **Linux / macOS** | `sudo apt install g++ make libsdl2-dev` (or `brew install sdl2`) → `make` → `./chip8 roms/Tetris.ch8` |
 | ✅ **Tests** | `make test`, no window needed |
