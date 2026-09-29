@@ -158,17 +158,20 @@ flowchart LR
 │ 01 NOW PLAYING   │ ┌──────────────────────────────────┐ │ 04 EMULATION     │
 │  Tetris          │ │                                  │ │  Pause   Reset   │
 │  Q ROTATE W LEFT │ │                                  │ │  Slower  Faster  │
-│ ┌──┬──┬──┬──┐    │ │           GAME  SCREEN           │ │  Hold to rewind  │
-│ │1 │2 │3 │C │    │ │                                  │ │ 05 SAVE STATES   │
-│ ├──┼──┼──┼──┤    │ │                                  │ │  Save  Load  ‹0› │
+│ ┌──┬──┬──┬──┐    │ │                                  │ │  Hold to rewind  │
+│ │1 │2 │3 │C │    │ │           GAME  SCREEN           │ │ 05 SAVE STATES   │
+│ ├──┼──┼──┼──┤    │ │     (fills the whole monitor)    │ │  Save  Load  ‹0› │
 │ │4 │5 │6 │D │    │ │                                  │ │ 06 DEBUGGER      │
-│ └──┴──┴──┴──┘    │ └──────────────────────────────────┘ │  Open  Map       │
-│ 02 LIBRARY       │  ● RUNNING   ♫ SOUND                 │  Step  Back      │
-│  Games           │ SPEED│QUIRKS│PALETTE│DISPLAY│WAVE    │ 07 DISPLAY/SOUND │
-│  Super-CHIP      ├──────────────────────────────────────┤  Palette  Mute   │
-│  Test ROMs       │ 03 PROOF OF OUR FIXES                │  Test sound      │
-│  [Open .ch8]     │  before / after + "Run IBM logo"     │ 08 KEYBOARD      │
-└──────────────────┴──────────────────────────────────────┴──────────────────┘
+│ └──┴──┴──┴──┘    │ │                                  │ │  Open  Map       │
+│ 02 LIBRARY       │ └──────────────────────────────────┘ │  Step  Back      │
+│  Games           │  ● RUNNING   ♫ SOUND                 │ 07 DISPLAY/SOUND │
+│  Super-CHIP      │ SPEED│QUIRKS│PALETTE│DISPLAY│WAVE    │  Palette  Mute   │
+│  Test ROMs       │                                      │  Test sound      │
+│  [Open .ch8]     │                                      │ 08 KEYBOARD      │
+├──────────────────┴──────────────────────────────────────┴──────────────────┤
+│ 03 PROOF OF OUR FIXES  (scroll down)                                       │
+│  [ before / after image ]   what was wrong · "Run IBM logo" · "Run tests"  │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Keys the current game uses glow green on the keypad. The desktop app has the same features,
