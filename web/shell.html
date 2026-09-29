@@ -44,7 +44,7 @@
   .maker small { display: block; margin-top: 4px; font: 600 9px/1 var(--mono); letter-spacing: 1.5px; color: #474d5a; }
 
   .console { display: grid; gap: var(--gap); padding: var(--gap);
-    grid-template-columns: clamp(230px, 20vw, 340px) minmax(0, 1fr) clamp(220px, 19vw, 320px);
+    grid-template-columns: minmax(270px, 1fr) var(--center-col, minmax(0, 3fr)) minmax(260px, 1fr);
     height: calc(100vh - var(--header)); min-height: 420px; }
   .col { display: flex; flex-direction: column; gap: var(--gap); min-height: 0; min-width: 0;
     overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
@@ -66,8 +66,9 @@
     box-shadow: inset 0 0 0 2px #050507, inset 0 0 30px rgba(0,0,0,.9), 0 0 60px -12px rgba(255,181,71,.18); }
   .center .monitor { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   .center .screen { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
-  canvas { display: block; margin: 0 auto; width: min(100%, max(360px, calc((100vh - var(--header) - 175px) * 2))) !important;
-    height: auto !important; aspect-ratio: 2 / 1; image-rendering: pixelated; outline: none; border-radius: 6px; background: #000; }
+  .center .screen { overflow: hidden; }
+  canvas { display: block; width: 100% !important; height: 100% !important; object-fit: contain;
+    image-rendering: pixelated; outline: none; border-radius: 6px; background: #000; }
   .plate { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 4px 0; }
   .maker { font: 800 12px/1 var(--mono); letter-spacing: 3px; color: #5b6272; }
   .leds { display: flex; align-items: center; gap: 16px; font: 600 10px/1 var(--mono); letter-spacing: 1px; color: var(--faint); }
@@ -83,6 +84,20 @@
   .lcd b { display: block; margin-top: 5px; font: 700 13px/1.2 var(--mono); color: var(--lcd); white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 8px rgba(125,255,176,.35); }
   .lcd .msg b { color: var(--accent); text-shadow: 0 0 8px rgba(255,181,71,.35); }
+  .left, .right { container-type: inline-size; }
+  @container (max-width: 300px) {
+    .grid2 button kbd, .mod-h button kbd { display: none; }
+    .grid2 button { justify-content: center; }
+  }
+  .lcd .lcd-extra { display: none; grid-column: 1 / -1; }
+  .lcd-extra span { display: block; margin-top: 8px; font: 500 12px/1.4 var(--mono); color: var(--faint); }
+  .capped .center .monitor { flex: none; }
+  .capped .center .screen { flex: none; height: var(--screen-h); }
+  .capped .lcd { flex: 1 1 auto; grid-template-rows: auto 1fr; }
+  .capped .lcd > div { display: flex; flex-direction: column; justify-content: center; }
+  .capped .lcd b { font-size: clamp(13px, 1.25vw, 20px); }
+  .capped .lcd .lcd-extra { display: flex; }
+  .capped .lcd .lcd-extra b { color: var(--accent); white-space: normal; font-size: clamp(14px, 1.4vw, 24px); }
 
   button, .file { font: 600 12.5px/1 Inter, system-ui, sans-serif; color: var(--fg); background: var(--panel2);
     border: 1px solid var(--line2); border-radius: 9px; padding: 9px 10px; cursor: pointer; display: inline-flex;
@@ -161,7 +176,6 @@
     .lcd div { padding: 6px 10px; }
     .key { aspect-ratio: 1.45; }
     .keys-table td { padding: 3px 0; }
-    canvas { width: min(100%, max(340px, calc((100vh - var(--header) - 145px) * 2))) !important; }
   }
 
   @media (max-height: 720px) {
@@ -180,7 +194,6 @@
     .slot { margin-top: 5px; }
     .rom { padding: 6px 9px; }
     .proof h3 { font-size: 14px; } .proof ul { font-size: 12.5px; }
-    canvas { width: min(100%, max(320px, calc((100vh - var(--header) - 120px) * 2))) !important; }
   }
 
   @media (max-width: 1360px) {
@@ -189,21 +202,24 @@
     .proof > .mod-b { gap: 18px; }
   }
 
-  @media (max-width: 1000px) {
-    .console { height: auto; min-height: 0; grid-template-columns: 1fr 1fr; }
-    .center { grid-column: 1 / -1; order: -1; }
+  @media (max-width: 1100px) {
+    .console { height: auto; min-height: 0; grid-template-columns: 1fr; }
+    .center { order: -1; }
+    .left { order: 0; } .right { order: 1; }
     .module.grow { flex: none; }
     .grow > .mod-b { flex: none; overflow: visible; }
-    canvas { width: 100% !important; }
+    .center .monitor, .center .screen { flex: none; display: block; }
+    canvas { height: auto !important; aspect-ratio: 2 / 1; }
+    .keypad { max-width: 520px; margin-left: auto; margin-right: auto; }
+    .right .grid2 { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   }
-  @media (max-width: 1000px) {
+  @media (max-width: 1100px) {
     .col { overflow: visible; }
     .proof > .mod-b { grid-template-columns: 1fr; }
     .proof img { margin: 0 auto; }
     .badges .badge:nth-child(n+3) { display: none; }
   }
   @media (max-width: 760px) {
-    .console { grid-template-columns: 1fr; }
     .lcd { grid-template-columns: repeat(2, 1fr); }
     .proof > .mod-b { grid-template-columns: 1fr; }
     .badges { display: none; }
@@ -264,6 +280,7 @@
       <div><small>Display</small><b id="st-res">-</b></div>
       <div><small>Waveform</small><b id="st-wave">-</b></div>
       <div class="msg"><small>Last action</small><b id="st-msg">Click the screen to play</b></div>
+      <div class="lcd-extra"><small>Controls for this game</small><b id="st-controls">-</b><span>H shows every key &middot; F1 opens the debugger &middot; hold Backspace to rewind</span></div>
     </div>
   </div>
 
@@ -470,6 +487,34 @@
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, wakeAudio, { capture: true }));
   canvas.addEventListener('click', () => canvas.focus());
 
+  function fitScreen() {
+    const con = document.querySelector('.console');
+    if (innerWidth <= 1100) { con.style.removeProperty('--center-col'); con.classList.remove('capped'); return; }
+    const center = document.querySelector('.center'), mon = center.querySelector('.monitor'), scr = center.querySelector('.screen');
+    const plate = center.querySelector('.plate'), lcd = center.querySelector('.lcd');
+    const sc = getComputedStyle(scr), mc = getComputedStyle(mon), cc = getComputedStyle(con), lc = getComputedStyle(lcd);
+    const px = (v) => parseFloat(v) || 0;
+    const lcdBase = lcd.firstElementChild.offsetHeight + px(lc.borderTopWidth) + px(lc.borderBottomWidth);
+    const monitorV = px(mc.paddingTop) + px(mc.paddingBottom) + px(mc.borderTopWidth) + px(mc.borderBottomWidth) + plate.offsetHeight;
+    const screenV = px(sc.paddingTop) + px(sc.paddingBottom), screenH = px(sc.paddingLeft) + px(sc.paddingRight);
+    const chrome = screenH + px(mc.paddingLeft) + px(mc.paddingRight) + px(mc.borderLeftWidth) + px(mc.borderRightWidth);
+    const height = center.clientHeight - px(cc.rowGap || cc.gap) - lcdBase - monitorV - screenV;
+    const want = Math.floor(2 * height + chrome);
+    const room = con.clientWidth - px(cc.paddingLeft) - px(cc.paddingRight) - 2 * px(cc.columnGap) - 270 - 260;
+    const width = Math.max(320, Math.min(want, room));
+    con.style.setProperty('--center-col', width + 'px');
+    const capped = want - width > 4;
+    con.classList.toggle('capped', capped);
+    if (capped) con.style.setProperty('--screen-h', Math.floor((width - chrome) / 2 + screenV) + 'px');
+  }
+  const fitObserver = new ResizeObserver(fitScreen);
+  fitObserver.observe(document.documentElement);
+  fitObserver.observe(document.querySelector('.console'));
+  fitObserver.observe(document.querySelector('.center .monitor'));
+  addEventListener('resize', fitScreen);
+  if (document.fonts) document.fonts.ready.then(fitScreen);
+  fitScreen();
+
   let debuggerOpen = false;
   window.addEventListener('wheel', (e) => {
     if (e.target === canvas && !debuggerOpen) e.stopPropagation();
@@ -492,6 +537,7 @@
     $('now-title').textContent = s.title;
     $('now-meta').textContent = `${s.quirks} · ${s.ips.toLocaleString()} instructions/s · ${s.hires ? '128x64' : '64x32'}`;
     $('now-controls').textContent = s.controls || 'Press keys: the emulator will show which ones this game uses.';
+    $('st-controls').textContent = s.controls || 'Press keys: the emulator shows which ones this game uses';
     $('b-pause').classList.toggle('on', s.paused);
     $('b-dbg').classList.toggle('on', s.debugger);
     debuggerOpen = s.debugger;
