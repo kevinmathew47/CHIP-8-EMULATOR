@@ -1,5 +1,3 @@
-// Checks that a savestate written to disk restores the machine exactly:
-// run -> save -> run further -> load -> run the same amount again -> displays must match.
 #include "../src/chip8.h"
 #include <cstring>
 #include <iostream>
@@ -25,7 +23,7 @@ int main(int argc, char** argv){
     uint8_t expected[DISPLAY_W*DISPLAY_H];
     std::memcpy(expected, chip8.display, sizeof(expected));
 
-    run_frames(chip8, 90); // Drift away from the saved point
+    run_frames(chip8, 90);
     if(!chip8.load_state_from_file(path)){ std::cerr << "FAIL: could not read savestate\n"; return 1; }
     Chip8State restored = chip8.save_state();
     if(std::memcmp(&saved, &restored, sizeof(saved)) != 0){ std::cerr << "FAIL: restored state differs\n"; return 1; }
@@ -33,7 +31,6 @@ int main(int argc, char** argv){
     run_frames(chip8, 30);
     if(std::memcmp(expected, chip8.display, sizeof(expected)) != 0){ std::cerr << "FAIL: replay diverged\n"; return 1; }
 
-    // A corrupt file must be rejected without touching the machine
     { FILE* f = std::fopen(path, "wb"); std::fputs("junk", f); std::fclose(f); }
     if(chip8.load_state_from_file(path)){ std::cerr << "FAIL: accepted a corrupt savestate\n"; return 1; }
     std::remove(path);

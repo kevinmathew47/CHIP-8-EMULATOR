@@ -1,11 +1,10 @@
-// FX0A must wait for a key to be pressed AND released (original VIP behaviour).
 #include "../src/chip8.h"
 #include <iostream>
 
 int main(){
     Chip8 chip8;
-    chip8.poke(0x200, 0xF3); chip8.poke(0x201, 0x0A); // FX0A: wait for key -> V3
-    chip8.poke(0x202, 0x12); chip8.poke(0x203, 0x02); // 1202: loop forever
+    chip8.poke(0x200, 0xF3); chip8.poke(0x201, 0x0A);
+    chip8.poke(0x202, 0x12); chip8.poke(0x203, 0x02);
 
     for(int i=0; i<5; i++) chip8.emulate_cycle();
     if(chip8.get_pc() != 0x200){ std::cerr << "FAIL: FX0A continued with no key pressed\n"; return 1; }

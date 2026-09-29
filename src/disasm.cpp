@@ -18,8 +18,8 @@ std::string disassemble(uint16_t opcode){
         case 0x0000:
             if(opcode == 0x00E0) return "CLS";
             if(opcode == 0x00EE) return "RET";
-            if((opcode & 0xFFF0) == 0x00C0) return "SCD " + std::to_string(n); // SUPER-CHIP from here
-            if((opcode & 0xFFF0) == 0x00D0) return "SCU " + std::to_string(n); // XO-CHIP
+            if((opcode & 0xFFF0) == 0x00C0) return "SCD " + std::to_string(n);
+            if((opcode & 0xFFF0) == 0x00D0) return "SCU " + std::to_string(n);
             if(opcode == 0x00FB) return "SCR";
             if(opcode == 0x00FC) return "SCL";
             if(opcode == 0x00FD) return "EXIT";
@@ -72,5 +72,5 @@ std::string disassemble(uint16_t opcode){
             }
             break;
     }
-    return "DW 0x" + hex(opcode, 4); // Not an instruction: probably sprite or data bytes
+    return "DW 0x" + hex(opcode, 4);
 }

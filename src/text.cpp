@@ -2,7 +2,6 @@
 #include <cctype>
 #include <cstdint>
 
-// Each glyph is 5 rows of 3 bits (bit 2 = left column).
 struct Glyph{ char c; uint8_t rows[5]; };
 
 static const Glyph GLYPHS[] = {
@@ -26,7 +25,7 @@ static const Glyph GLYPHS[] = {
 static const Glyph* find_glyph(char c){
     c = (char)std::toupper((unsigned char)c);
     for(const Glyph& g : GLYPHS) if(g.c == c) return &g;
-    return nullptr; // Unknown characters (and space) render as blank
+    return nullptr;
 }
 
 void draw_text(SDL_Renderer* renderer, const std::string& text, int x, int y, int scale, SDL_Color color){

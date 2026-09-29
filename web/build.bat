@@ -1,6 +1,4 @@
 @echo off
-rem Windows helper for the browser build (same steps as "make web").
-rem Needs the Emscripten SDK; set EMSDK_DIR if it is not at ..\..\emsdk.
 setlocal
 cd /d "%~dp0.."
 if "%EMSDK_DIR%"=="" set "EMSDK_DIR=%~dp0..\..\emsdk"
@@ -14,7 +12,6 @@ em++ -std=c++17 -O2 -sUSE_SDL=2 -sALLOW_MEMORY_GROWTH=1 ^
   --shell-file web/shell.html -o web/build/index.html ^
   src/main.cpp src/chip8.cpp src/text.cpp src/disasm.cpp src/debugger.cpp
 if errorlevel 1 exit /b 1
-rem Publish: docs\ is what GitHub Pages serves
 if not exist docs mkdir docs
 xcopy /e /y /q web\build\* docs\ >nul
 type nul > docs\.nojekyll

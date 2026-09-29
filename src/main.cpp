@@ -19,57 +19,51 @@
 
 namespace fs = std::filesystem;
 
-const int SCALE = 10; // Each low-res pixel is 10x10 screen pixels
+const int SCALE = 10;
 const int WIDTH = 64*SCALE;
 const int HEIGHT = 32*SCALE;
-const int CELL = WIDTH/DISPLAY_W; // Screen pixels per display-buffer cell (5, i.e. one high-res pixel)
+const int CELL = WIDTH/DISPLAY_W;
 const double PI = 3.14159265358979323846;
-const size_t REWIND_FRAMES = 60*10; // Ten seconds of history
+const size_t REWIND_FRAMES = 60*10;
 const int SAVE_SLOTS = 10;
 
-// Keyboard mapping
 SDL_Keycode keymap[16] = {
-    SDLK_x, // 0
-    SDLK_1, // 1
-    SDLK_2, // 2
-    SDLK_3, // 3
-    SDLK_q, // 4
-    SDLK_w, // 5
-    SDLK_e, // 6
-    SDLK_a, // 7
-    SDLK_s, // 8
-    SDLK_d, // 9
-    SDLK_z, // A
-    SDLK_c, // B
-    SDLK_4, // C
-    SDLK_r, // D
-    SDLK_f, // E
-    SDLK_v  // F
+    SDLK_x,
+    SDLK_1,
+    SDLK_2,
+    SDLK_3,
+    SDLK_q,
+    SDLK_w,
+    SDLK_e,
+    SDLK_a,
+    SDLK_s,
+    SDLK_d,
+    SDLK_z,
+    SDLK_c,
+    SDLK_4,
+    SDLK_r,
+    SDLK_f,
+    SDLK_v
 };
 
-// Instructions per frame; multiply by 60 for instructions per second
 const int SPEED_STEPS[] = {1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 100, 200, 500, 1000};
 const int SPEED_STEP_COUNT = sizeof(SPEED_STEPS)/sizeof(SPEED_STEPS[0]);
-const int DEFAULT_SPEED_STEP = 5; // 10 per frame = 600 Hz
+const int DEFAULT_SPEED_STEP = 5;
 
-// ROMs that need non-default settings to run correctly, keyed by CRC32 of the file
 struct RomInfo{ uint32_t crc; const char* title; QuirkProfile quirks; int speed_step; const char* controls; };
 const RomInfo ROM_DATABASE[] = {
-    {0x9d307e90, "Blinky", QuirkProfile::SCHIP, 7, "V START   3 UP  E DOWN  A LEFT  S RIGHT"}, // Relies on SCHIP shift/load behaviour, runs best at 1200 IPS
+    {0x9d307e90, "Blinky", QuirkProfile::SCHIP, 7, "V START   3 UP  E DOWN  A LEFT  S RIGHT"},
     {0x7d75a857, "Pong",   QuirkProfile::CHIP8, DEFAULT_SPEED_STEP, "LEFT PADDLE 1 / Q    RIGHT PADDLE 4 / R"},
     {0x0ce70772, "Tetris", QuirkProfile::CHIP8, DEFAULT_SPEED_STEP, "Q ROTATE  W LEFT  E RIGHT  A DROP"},
-    // Timendus test suite (tests/roms): proof that the fixed core passes every check
     {0x42adaf83, "IBM Logo test",   QuirkProfile::CHIP8, DEFAULT_SPEED_STEP, "NO INPUT - DRAWS THE IBM LOGO"},
     {0x561bf2f2, "Opcode test",     QuirkProfile::CHIP8, DEFAULT_SPEED_STEP, "NO INPUT - A TICK FOR EVERY OPCODE"},
     {0x3e251b98, "Flags test",      QuirkProfile::CHIP8, DEFAULT_SPEED_STEP, "NO INPUT - A TICK FOR EVERY FLAG CHECK"},
     {0xae214ed4, "Quirks test",     QuirkProfile::COSMAC, DEFAULT_SPEED_STEP, "PRESS 1 FOR CHIP-8 (F2 + 2 FOR SCHIP)"},
     {0x0ab291f3, "Scrolling test",  QuirkProfile::SCHIP, DEFAULT_SPEED_STEP, "PRESS 1 (LOW-RES) OR 3 (HIGH-RES)"},
-    // SUPER-CHIP games from the chip8Archive (CC0), see roms/schip/README.md. Speed and quirks follow
-    // the archive's own recommended settings (Octo defaults = our XO-CHIP profile)
-    {0x92e250ca, "Eaty The Alien", QuirkProfile::XOCHIP, 11, "E START / ACTION   W A S D MOVE"}, // 200 per frame
-    {0x35c089ce, "Super Octogon",  QuirkProfile::SCHIP,  11, "A / D TURN"}, // 200 per frame
-    {0x8bd69060, "Black Rainbow",  QuirkProfile::XOCHIP, 7, "D START   W A S D MOVE   X ACTION"}, // 20 per frame
-    {0x36df976a, "Rockto",         QuirkProfile::XOCHIP, 6, "ANY KEY START   A S D MOVE   1 REDRAW LEVEL"}, // 15 per frame
+    {0x92e250ca, "Eaty The Alien", QuirkProfile::XOCHIP, 11, "E START / ACTION   W A S D MOVE"},
+    {0x35c089ce, "Super Octogon",  QuirkProfile::SCHIP,  11, "A / D TURN"},
+    {0x8bd69060, "Black Rainbow",  QuirkProfile::XOCHIP, 7, "D START   W A S D MOVE   X ACTION"},
+    {0x36df976a, "Rockto",         QuirkProfile::XOCHIP, 6, "ANY KEY START   A S D MOVE   1 REDRAW LEVEL"},
 };
 
 const RomInfo* find_rom_info(uint32_t crc){
@@ -77,7 +71,6 @@ const RomInfo* find_rom_info(uint32_t crc){
     return nullptr;
 }
 
-// Keyboard key for each CHIP-8 key (see keymap), used to describe detected controls
 const char KEY_LABELS[] = "X123QWEASDZC4RFV";
 
 struct Palette{ const char* name; SDL_Color background; SDL_Color foreground; };
@@ -100,20 +93,20 @@ struct AudioState{
     bool beeping = false;
     int waveform = WAVE_SQUARE;
     double frequency = 440.0;
-    double phase = 0.0; // 0..1 position within the current wave cycle
+    double phase = 0.0;
     int sample_rate = 44100;
-    uint64_t samples_played = 0; // Non-silent samples produced; lets tests prove sound really plays
+    uint64_t samples_played = 0;
 };
 
 void audio_callback(void* userdata, uint8_t* stream, int len){
     AudioState* audio = (AudioState*) userdata;
     int16_t* audio_buffer = (int16_t*) stream;
     int samples = len/2;
-    const double amplitude = 7000.0; // About 21% of full scale: clearly audible on laptop speakers
+    const double amplitude = 7000.0;
 
     for(int i=0; i<samples; i++){
         if(!audio->beeping){
-            audio_buffer[i] = 0; // Silence
+            audio_buffer[i] = 0;
             audio->phase = 0.0;
             continue;
         }
@@ -143,27 +136,26 @@ struct App{
     bool paused = false;
     bool step_frame = false;
     bool step_instruction = false;
-    bool skip_breakpoint_once = false; // Lets execution leave a breakpoint after resuming
+    bool skip_breakpoint_once = false;
     bool debug_open = false;
     Debugger debugger;
     bool rewinding = false;
     bool show_help = false;
-    bool phosphor = true;   // Fade pixels out over a few frames instead of flickering
+    bool phosphor = true;
     bool scanlines = false;
     bool muted = false;
-    std::string title;              // Game title shown to the player (database title or file name)
+    std::string title;
     int speed_step = DEFAULT_SPEED_STEP;
     int palette = 0;
     int save_slot = 0;
-    std::string controls;          // Known controls for this ROM, or empty to auto-detect
-    uint32_t random_seed = 0;      // --seed: fixed CXNN random sequence for repeatable demos (0 = random)
-    uint16_t announced_keys = 0;   // Detected keys already shown to the player
-    uint32_t controls_until = 0;   // Controls banner is visible until this tick
-    std::deque<Chip8State> step_history; // Per-instruction states for stepping backwards in the debugger
-    bool quirks_forced = false; // Set by --quirks / --speed so the ROM database doesn't override them
+    std::string controls;
+    uint32_t random_seed = 0;
+    uint16_t announced_keys = 0;
+    uint32_t controls_until = 0;
+    std::deque<Chip8State> step_history;
+    bool quirks_forced = false;
     bool speed_forced = false;
-    int capture_after = -1; // --capture N: screenshot after N frames and quit (for docs/CI)
-    // --press KEY@FRAME[:HOLD] replays key presses, so demos and screenshots are reproducible
+    int capture_after = -1;
     struct ScriptedKey{ int frame; SDL_Keycode key; bool down; };
     std::vector<ScriptedKey> script;
     int frame_counter = 0;
@@ -183,7 +175,7 @@ struct App{
     std::string capture_path;
     std::string forced_capture_path;
 
-    float intensity[DISPLAY_W*DISPLAY_H] = {}; // Per-cell brightness used for the phosphor effect
+    float intensity[DISPLAY_W*DISPLAY_H] = {};
     std::deque<Chip8State> history;
 
     std::string message;
@@ -217,7 +209,7 @@ struct App{
             notify("Could not load ROM");
             return false;
         }
-        if(!rom_path.empty()) debugger.breakpoints.clear(); // Addresses from the previous ROM mean nothing now
+        if(!rom_path.empty()) debugger.breakpoints.clear();
         chip8 = fresh;
         if(random_seed) chip8.seed_random(random_seed);
         rom_path = path;
@@ -274,9 +266,9 @@ struct App{
 
     void load_from_slot(){
         if(chip8.load_state_from_file(slot_path(save_slot))){
-            history.clear(); // Rewinding across a load would jump between timelines
+            history.clear();
             step_history.clear();
-            std::memset(intensity, 0, sizeof(intensity)); // No ghosts from the timeline we just left
+            std::memset(intensity, 0, sizeof(intensity));
             notify("Loaded slot " + std::to_string(save_slot));
         }
         else notify("Slot " + std::to_string(save_slot) + " is empty");
@@ -357,7 +349,7 @@ struct App{
                 scanlines = !scanlines;
                 notify(scanlines ? "Scanlines on" : "Scanlines off");
                 break;
-            case SDLK_b: // Sound check: half a second of tone, whatever the ROM is doing
+            case SDLK_b:
                 chip8.set_sound_timer(30);
                 notify("Sound test: 0.5 s tone");
                 break;
@@ -395,13 +387,12 @@ struct App{
         SDL_Event event;
         while(SDL_PollEvent(&event)){
             if(event.type == SDL_QUIT) running = false;
-            // Key-up events are lost while another window has focus, so release everything
             if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
                 std::memset(chip8.key, 0, sizeof(chip8.key));
                 rewinding = false;
             }
             if(event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && debug_open){
-                debugger.handle_click(event.button.x, event.button.y); // Already in logical coordinates
+                debugger.handle_click(event.button.x, event.button.y);
             }
             if(event.type == SDL_MOUSEWHEEL && debug_open){
                 int mx, my;
@@ -417,7 +408,6 @@ struct App{
             if(event.type == SDL_KEYDOWN){
                 if(event.key.repeat == 0) handle_hotkey(event.key.keysym.sym);
                 if(event.key.keysym.sym == SDLK_BACKSPACE) rewinding = true;
-                // Check which Chip-8 key was pressed
                 for(int i=0; i<16; i++){
                     if(event.key.keysym.sym == keymap[i]) chip8.key[i] = 1;
                 }
@@ -433,10 +423,9 @@ struct App{
 
     void run_frame(){
         if(rewinding){
-            // Step back two frames per real frame so rewinding feels quicker than playing
             for(int i=0; i<2 && !history.empty(); i++){
                 uint8_t keys[16];
-                std::memcpy(keys, chip8.key, sizeof(keys)); // Keys reflect the keyboard, not the past
+                std::memcpy(keys, chip8.key, sizeof(keys));
                 chip8.load_state(history.back());
                 std::memcpy(chip8.key, keys, sizeof(keys));
                 history.pop_back();
@@ -448,7 +437,7 @@ struct App{
             step_instruction = false;
             record_step();
             chip8.emulate_cycle();
-            chip8.vblank_wait = false; // Stepping ignores the display wait so every press makes progress
+            chip8.vblank_wait = false;
             return;
         }
         if(paused && !step_frame) return;
@@ -478,14 +467,13 @@ struct App{
         chip8.update_timers();
     }
 
-    static const size_t STEP_HISTORY = 1000; // About 12 MB of full machine states
+    static const size_t STEP_HISTORY = 1000;
 
     void record_step(){
         step_history.push_back(chip8.save_state());
         if(step_history.size() > STEP_HISTORY) step_history.pop_front();
     }
 
-    // Time-travel debugging: undo the last instruction by restoring the state saved before it ran
     void step_back(){
         if(!paused){ set_paused(true); notify("Paused"); return; }
         if(step_history.empty()){ notify("No earlier steps recorded (open F1 first)"); return; }
@@ -499,8 +487,6 @@ struct App{
         notify(buf);
     }
 
-    // Controls banner: known ROMs show their verified controls; others show the keys the ROM
-    // has actually been seen checking, updated whenever it starts reading a new key.
     void update_controls_banner(){
         uint16_t polls = chip8.get_key_polls();
         if(controls.empty() && (polls & ~announced_keys)){
@@ -517,7 +503,6 @@ struct App{
         return "DETECTED KEYS: " + keys;
     }
 
-    // One 60Hz frame: input, emulation, audio, drawing. Both the native loop and the browser call this.
     void tick(){
         play_script();
         handle_input();
@@ -542,8 +527,7 @@ struct App{
         SDL_SetRenderDrawColor(renderer, pal.background.r, pal.background.g, pal.background.b, 255);
         SDL_RenderClear(renderer);
 
-        // Phosphor: lit pixels are full brightness, unlit ones fade out over a few frames
-        bool frozen = paused; // Keep fading while rewinding, or every past position stays lit
+        bool frozen = paused;
         for(int i=0; i<DISPLAY_W*DISPLAY_H; i++){
             if(chip8.display[i]) intensity[i] = 1.0f;
             else if(!phosphor) intensity[i] = 0.0f;
@@ -589,7 +573,6 @@ struct App{
         if(rewinding){
             std::string label = "<< REWIND " + std::to_string(history.size()*100/REWIND_FRAMES) + "%";
             draw_panel(label, 10, 10, 3);
-            // History bar along the bottom
             SDL_Rect bar = {0, HEIGHT - 6, (int)(WIDTH*history.size()/REWIND_FRAMES), 6};
             SDL_SetRenderDrawColor(renderer, 255, 80, 80, 220);
             SDL_RenderFillRect(renderer, &bar);
@@ -635,27 +618,22 @@ struct App{
 #ifdef __EMSCRIPTEN__
 static App* web_app = nullptr;
 
-// Called from the web page after it writes a ROM (bundled or uploaded) into the virtual filesystem
 extern "C" EMSCRIPTEN_KEEPALIVE int web_load_rom(const char* path){
     return web_app && web_app->load_rom(path) ? 1 : 0;
 }
 
-// Lets the page's buttons trigger the same actions as the keyboard shortcuts
 extern "C" EMSCRIPTEN_KEEPALIVE void web_hotkey(int keycode){
     if(web_app) web_app->handle_hotkey((SDL_Keycode)keycode);
 }
 
-// "Hold to rewind" button: same as holding Backspace
 extern "C" EMSCRIPTEN_KEEPALIVE void web_set_rewind(int on){
     if(web_app) web_app->rewinding = on != 0;
 }
 
-// On-screen keypad: press or release CHIP-8 key 0-F
 extern "C" EMSCRIPTEN_KEEPALIVE void web_set_key(int key, int down){
     if(web_app) web_app->chip8.key[key & 0xF] = down ? 1 : 0;
 }
 
-// Everything the page shows about the running game, as a small JSON object
 extern "C" EMSCRIPTEN_KEEPALIVE const char* web_get_info(){
     static std::string json;
     if(!web_app) return "{}";
@@ -703,7 +681,6 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    // Static, not a stack variable: in the browser main() returns early while the frame loop keeps using app
     static App app;
     std::cout << "CHIP-8 Emulator - built by Kevin Mathew (" << BUILD_SIGNATURE << ")" << std::endl;
     if(std::string(argv[1]) == "--version") return 0;
@@ -731,7 +708,6 @@ int main(int argc, char** argv){
         else if(arg == "--debugger") app.debug_open = true;
         else if(arg == "--seed" && i+1 < argc) app.random_seed = (uint32_t)std::strtoul(argv[++i], nullptr, 10);
         else if(arg == "--press" && i+1 < argc){
-            // e.g. --press Tab@30  or  --press Backspace@200:40 (hold for 40 frames)
             std::string spec = argv[++i];
             size_t at = spec.rfind('@');
             if(at == std::string::npos){ print_usage(argv[0]); return 1; }
@@ -758,7 +734,6 @@ int main(int argc, char** argv){
         std::cerr << "SDL Error: " << SDL_GetError() << std::endl;
         return 1;
     }
-    // Audio setup
     SDL_AudioSpec want, have;
     SDL_zero(want);
     want.freq = 44100;
@@ -777,7 +752,7 @@ int main(int argc, char** argv){
     }
 
 #ifdef __EMSCRIPTEN__
-    const Uint32 window_flags = SDL_WINDOW_SHOWN; // The page's CSS scales the canvas; a resizable window would follow the page size
+    const Uint32 window_flags = SDL_WINDOW_SHOWN;
 #else
     const Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
@@ -794,7 +769,7 @@ int main(int argc, char** argv){
         SDL_Quit();
         return 1;
     }
-    SDL_RenderSetLogicalSize(app.renderer, WIDTH, HEIGHT); // Scale cleanly when the window is resized
+    SDL_RenderSetLogicalSize(app.renderer, WIDTH, HEIGHT);
     if(app.debug_open) app.set_debugger_open(true);
     SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_BLEND);
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
@@ -807,22 +782,19 @@ int main(int argc, char** argv){
     }
 
 #ifdef __EMSCRIPTEN__
-    // The browser owns the loop: it calls us on every display refresh, and we run
-    // however many 60Hz emulator frames are due so speed is the same on 60Hz and 144Hz screens.
     web_app = &app;
     emscripten_set_main_loop_arg([](void* arg){
         static double last = emscripten_get_now(), pending = 0.0;
         double now = emscripten_get_now();
         pending += now - last;
         last = now;
-        if(pending > 100.0) pending = 1000.0/60; // Tab was in the background; don't fast-forward
+        if(pending > 100.0) pending = 1000.0/60;
         for(int i=0; i<2 && pending >= 1000.0/60; i++){
             ((App*)arg)->tick();
             pending -= 1000.0/60;
         }
     }, &app, 0, 1);
 #else
-    // Frame pacing uses the high-resolution counter so we get a true 60Hz, not 1000/16 = 62.5Hz
     const uint64_t ticks_per_frame = SDL_GetPerformanceFrequency()/60;
     uint64_t next_frame = SDL_GetPerformanceCounter();
     while(app.running){
@@ -832,13 +804,13 @@ int main(int argc, char** argv){
         uint64_t now = SDL_GetPerformanceCounter();
         if(next_frame > now){
             uint32_t wait_ms = (uint32_t)((next_frame - now)*1000/SDL_GetPerformanceFrequency());
-            if(wait_ms > 1) SDL_Delay(wait_ms - 1); // Sleep most of the gap...
-            while(SDL_GetPerformanceCounter() < next_frame){} // ...then spin for the last millisecond
+            if(wait_ms > 1) SDL_Delay(wait_ms - 1);
+            while(SDL_GetPerformanceCounter() < next_frame){}
         }
-        else next_frame = now; // Fell behind; don't try to catch up in a burst
+        else next_frame = now;
     }
 #endif
-    if(app.capture_after >= -1 && !app.forced_capture_path.empty()) // Scripted runs report how much sound was produced
+    if(app.capture_after >= -1 && !app.forced_capture_path.empty())
         std::cout << "Audio samples played: " << app.audio.samples_played << std::endl;
     if(app.audio_device != 0) SDL_CloseAudioDevice(app.audio_device);
     SDL_DestroyRenderer(app.renderer);

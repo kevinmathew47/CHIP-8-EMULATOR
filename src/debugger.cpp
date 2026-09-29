@@ -5,8 +5,8 @@
 #include <cstdio>
 #include <string>
 
-static const int S = 2;           // Text scale
-static const int CHAR_W = 4*S;    // Width of one character cell
+static const int S = 2;
+static const int CHAR_W = 4*S;
 static const int LINE_H = 6*S + 2;
 
 static const SDL_Color WHITE  = {235, 235, 235, 255};
@@ -34,7 +34,6 @@ static void panel(SDL_Renderer* renderer, SDL_Rect r, const char* title){
 }
 
 void Debugger::draw(SDL_Renderer* renderer, const Chip8& chip8, bool paused){
-    // Right column: registers on top, disassembly below
     std::string reg_title = paused ? "REGISTERS  (PAUSED)" : "REGISTERS  (RUNNING)";
     if(back_steps > 0) reg_title += "  " + std::to_string(back_steps) + " STEPS BACK";
     panel(renderer, {644, 0, DEBUG_WIDTH - 644, 116}, reg_title.c_str());
@@ -42,7 +41,6 @@ void Debugger::draw(SDL_Renderer* renderer, const Chip8& chip8, bool paused){
     panel(renderer, {644, 120, DEBUG_WIDTH - 644, DEBUG_HEIGHT - 120}, "DISASSEMBLY  (CLICK = BREAKPOINT)");
     draw_disassembly(renderer, chip8, 652, 142, 26);
 
-    // Bottom row: memory, stack, keypad
     if(show_map){
         panel(renderer, {0, 324, 420, DEBUG_HEIGHT - 324}, "MEMORY MAP, 4 KB LIVE  (F3 = HEX)");
         draw_memory_map(renderer, chip8, 8, 346);
@@ -59,13 +57,11 @@ void Debugger::draw(SDL_Renderer* renderer, const Chip8& chip8, bool paused){
     draw_text(renderer, "F1 CLOSE P RUN F6 STEP F4 BACK F7 BREAK", 8, DEBUG_HEIGHT - 16, S, DIM);
 }
 
-// Every byte of the 4 KB address space as one cell, 64 per row. Colour shows what the CPU just did
-// there: executed (blue), read as data (green) or written (red), fading over about half a second.
 void Debugger::draw_memory_map(SDL_Renderer* renderer, const Chip8& chip8, int x, int y){
     const int CW = 6, CH = 2;
     for(int addr=0; addr<4096; addr++){
         int e = chip8.heat_exec[addr], r = chip8.heat_read[addr], w = chip8.heat_write[addr];
-        int base = chip8.peek((uint16_t)addr) ? 38 : 20; // Faint texture shows where code/data live
+        int base = chip8.peek((uint16_t)addr) ? 38 : 20;
         SDL_Color c = {
             (uint8_t)std::min(255, base + w + r/6),
             (uint8_t)std::min(255, base + r*3/4 + e/3),
@@ -73,7 +69,6 @@ void Debugger::draw_memory_map(SDL_Renderer* renderer, const Chip8& chip8, int x
             255};
         fill(renderer, {x + (addr % 64)*CW, y + (addr / 64)*CH, CW - 1, CH}, c);
     }
-    // PC and I markers
     uint16_t pc = chip8.get_pc() & 0xFFF, index = chip8.get_index() & 0xFFF;
     fill(renderer, {x + (pc % 64)*CW - 1, y + (pc / 64)*CH - 1, CW + 1, CH + 2}, WHITE);
     fill(renderer, {x + (index % 64)*CW - 1, y + (index / 64)*CH - 1, CW + 1, CH + 2}, LABEL);
@@ -109,8 +104,6 @@ void Debugger::draw_registers(SDL_Renderer* renderer, const Chip8& chip8, int x,
 void Debugger::draw_disassembly(SDL_Renderer* renderer, const Chip8& chip8, int x, int y, int lines){
     disasm_rows.clear();
     uint16_t pc = chip8.get_pc();
-    // Keep the PC a few lines from the top so upcoming instructions are visible.
-    // Stepping back by whole instructions keeps the view aligned to the PC.
     int start = pc - 2*6;
     if(start < 0) start = pc & 1;
     for(int i=0; i<lines; i++){
@@ -135,7 +128,7 @@ void Debugger::draw_disassembly(SDL_Renderer* renderer, const Chip8& chip8, int 
 void Debugger::draw_memory(SDL_Renderer* renderer, const Chip8& chip8, int x, int y, int rows){
     memory_area = {0, 324, 420, DEBUG_HEIGHT - 324};
     uint16_t index = chip8.get_index();
-    int base = (index & ~0x7) + memory_offset*8; // Rows are 8 bytes, aligned so I stays in a fixed column
+    int base = (index & ~0x7) + memory_offset*8;
     for(int r=0; r<rows; r++){
         int addr = (base + r*8) & 0xFFF;
         int row_y = y + r*LINE_H;
@@ -149,7 +142,6 @@ void Debugger::draw_memory(SDL_Renderer* renderer, const Chip8& chip8, int x, in
         }
     }
 
-    // Sprite preview: the 15 bytes at I drawn the way DXYN would draw them
     int px = x + CHAR_W*29 + 8;
     draw_text(renderer, "SPRITE", px, y, S, DIM);
     for(int row=0; row<15; row++){
@@ -165,7 +157,6 @@ void Debugger::draw_stack(SDL_Renderer* renderer, const Chip8& chip8, int x, int
     int sp = chip8.get_sp();
     if(sp == 0) draw_text(renderer, "EMPTY", x, y, S, DIM);
     for(int i=0; i<sp && i<11; i++){
-        // Newest return address on top
         int slot = sp - 1 - i;
         draw_text(renderer, std::to_string(slot) + " " + hex(chip8.get_stack(slot), 3), x, y + i*LINE_H, S, i == 0 ? WHITE : DIM);
     }
@@ -177,7 +168,7 @@ void Debugger::draw_keypad(SDL_Renderer* renderer, const Chip8& chip8, int x, in
         int k = LAYOUT[i];
         SDL_Rect cell = {x + (i % 4)*19, y + (i / 4)*22, 17, 20};
         bool down = chip8.key[k] != 0;
-        bool used = (chip8.get_key_polls() >> k) & 1; // The ROM has checked this key
+        bool used = (chip8.get_key_polls() >> k) & 1;
         fill(renderer, cell, down ? SDL_Color{255, 196, 70, 255} : SDL_Color{40, 40, 52, 255});
         if(used && !down){
             SDL_SetRenderDrawColor(renderer, GREEN.r, GREEN.g, GREEN.b, 255);
@@ -198,7 +189,7 @@ bool Debugger::handle_click(int x, int y){
         }
     }
     if(x >= memory_area.x && x < memory_area.x + memory_area.w && y >= memory_area.y && y < memory_area.y + memory_area.h){
-        memory_offset = 0; // Click the memory panel to jump back to I
+        memory_offset = 0;
         return true;
     }
     return false;

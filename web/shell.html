@@ -25,7 +25,6 @@
     background-size: 22px 22px;
   }
 
-  /* ---------- Header (full width) ---------- */
   header { height: var(--header); border-bottom: 1px solid var(--line); background: rgba(8,9,13,.9);
     display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--gap); }
   .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -42,7 +41,6 @@
   .tag .author { color: var(--accent); font-weight: 700; }
   .maker small { display: block; margin-top: 4px; font: 600 9px/1 var(--mono); letter-spacing: 1.5px; color: #474d5a; }
 
-  /* ---------- Console: three columns that exactly fill the window ---------- */
   .console { display: grid; gap: var(--gap); padding: var(--gap);
     grid-template-columns: clamp(230px, 20vw, 340px) minmax(0, 1fr) clamp(220px, 19vw, 320px);
     height: calc(100vh - var(--header)); min-height: 420px; }
@@ -60,12 +58,10 @@
   .mod-b { padding: 12px 14px 14px; }
   .mod-b::-webkit-scrollbar { width: 8px; } .mod-b::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
 
-  /* ---------- Monitor ---------- */
   .monitor { flex: none; background: linear-gradient(160deg, #22252e, #13151b 55%, #0e1015); border: 1px solid #2c313d;
     border-radius: 22px; padding: 16px 16px 10px; box-shadow: 0 30px 80px -40px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06); }
   .screen { position: relative; border-radius: 12px; padding: 10px; background: #000;
     box-shadow: inset 0 0 0 2px #050507, inset 0 0 30px rgba(0,0,0,.9), 0 0 60px -12px rgba(255,181,71,.18); }
-  /* The canvas is as large as possible while leaving room for the proof panel underneath */
   canvas { display: block; margin: 0 auto; width: min(100%, max(360px, calc((100vh - var(--header) - 215px) * 2))) !important;
     height: auto !important; aspect-ratio: 2 / 1; image-rendering: pixelated; outline: none; border-radius: 6px; background: #000; }
   .plate { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 4px 0; }
@@ -84,7 +80,6 @@
     overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 8px rgba(125,255,176,.35); }
   .lcd .msg b { color: var(--accent); text-shadow: 0 0 8px rgba(255,181,71,.35); }
 
-  /* ---------- Buttons ---------- */
   button, .file { font: 600 12.5px/1 Inter, system-ui, sans-serif; color: var(--fg); background: var(--panel2);
     border: 1px solid var(--line2); border-radius: 9px; padding: 9px 10px; cursor: pointer; display: inline-flex;
     align-items: center; justify-content: space-between; gap: 8px; transition: border-color .12s, background .12s, transform .05s;
@@ -104,7 +99,6 @@
   .slot .val { background: var(--inset); color: var(--muted); }
   .slot .val b { color: var(--fg); margin-left: 4px; }
 
-  /* ---------- Now playing + keypad ---------- */
   .now-title { font: 700 18px/1.2 Inter, sans-serif; margin: 0; }
   .now-meta { color: var(--muted); font: 500 11.5px/1.4 var(--mono); margin-top: 3px; }
   .controls { margin-top: 10px; padding: 9px 11px; border-radius: 9px; background: var(--inset); border: 1px solid var(--line);
@@ -125,7 +119,6 @@
   .legend .l-used::before { border: 1px solid var(--green); }
   .legend .l-down::before { background: var(--accent); }
 
-  /* ---------- Library ---------- */
   .lib-section { margin-bottom: 10px; }
   .lib-section:last-child { margin-bottom: 0; }
   .lib-section h4 { margin: 0 0 5px; font: 700 10px/1 var(--mono); letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint); }
@@ -135,8 +128,7 @@
   .rom.active span::before { content: "\25B6"; color: var(--accent); font-size: 9px; margin-right: 7px; }
   .rom small { color: var(--faint); font: 500 10.5px/1 var(--mono); }
 
-  /* ---------- Proof (fills the space under the monitor) ---------- */
-  .module.grow.proof { min-height: 110px; } /* the screen gets the height first; proof scrolls inside */
+  .module.grow.proof { min-height: 110px; }
   .proof > .mod-b { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
   .proof img { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; }
   .proof h3 { margin: 0 0 8px; font-size: 15.5px; }
@@ -146,13 +138,11 @@
   .proof code { font: 600 12px var(--mono); color: var(--accent); }
   .btns { display: flex; flex-wrap: wrap; gap: 6px; }
 
-  /* ---------- Shortcuts (fills the rest of the right column) ---------- */
   .keys-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .keys-table td { padding: 5px 0; border-bottom: 1px dashed var(--line); color: var(--muted); }
   .keys-table tr:last-child td { border-bottom: 0; }
   .keys-table td:last-child { text-align: right; }
 
-  /* ---------- Short laptop screens: tighter spacing so every column still fits exactly ---------- */
   @media (max-height: 860px) {
     :root { --header: 56px; --gap: 10px; }
     .mod-h { padding: 7px 12px; }
@@ -167,7 +157,6 @@
     canvas { width: min(100%, max(340px, calc((100vh - var(--header) - 185px) * 2))) !important; }
   }
 
-  /* ---------- Very short windows (laptop with browser toolbars, display scaling) ---------- */
   @media (max-height: 720px) {
     :root { --header: 48px; --gap: 8px; }
     h1 { font-size: 16px; } .tag { font-size: 10.5px; margin-top: 3px; } .logo { width: 30px; height: 30px; padding: 5px; }
@@ -187,14 +176,12 @@
     canvas { width: min(100%, max(320px, calc((100vh - var(--header) - 150px) * 2))) !important; }
   }
 
-  /* ---------- Narrower desktops: slimmer side columns, key hints hidden inside side buttons ---------- */
   @media (max-width: 1360px) {
     .right button kbd, .left .mod-h button kbd { display: none; }
     .right button { justify-content: center; }
     .proof > .mod-b { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
   }
 
-  /* ---------- Tablets and phones: natural page flow instead of a fixed-height console ---------- */
   @media (max-width: 1000px) {
     .console { height: auto; min-height: 0; grid-template-columns: 1fr 1fr; }
     .center { grid-column: 1 / -1; order: -1; }
@@ -231,7 +218,6 @@
 
 <main class="console">
 
-  <!-- ===== Left: what you are playing ===== -->
   <div class="col left">
     <section class="module">
       <div class="mod-h"><h2><span>01</span>Now playing</h2><button data-key="104" style="padding:5px 8px">All keys <kbd>H</kbd></button></div>
@@ -251,7 +237,6 @@
     </section>
   </div>
 
-  <!-- ===== Centre: monitor, readout, proof ===== -->
   <div class="col center">
     <div class="monitor">
       <div class="screen"><canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas></div>
@@ -291,7 +276,6 @@
     </section>
   </div>
 
-  <!-- ===== Right: the controls ===== -->
   <div class="col right">
     <section class="module">
       <div class="mod-h"><h2><span>04</span>Emulation</h2></div>
@@ -356,8 +340,6 @@
   </div>
 </main>
 
-
-
 <script>
   const $ = (id) => document.getElementById(id);
   const canvas = $('canvas');
@@ -402,7 +384,6 @@
     return Module.ccall(name, name === 'web_get_info' ? 'string' : 'number', types, args);
   }
 
-  // ---- Library ----
   const lib = $('library');
   LIBRARY.forEach(([section, roms]) => {
     const div = document.createElement('div');
@@ -419,7 +400,6 @@
     lib.appendChild(div);
   });
 
-  // Proof buttons reuse the test-ROM entries
   LIBRARY[2][1].slice(0, 3).forEach(([path, name]) => {
     const b = document.createElement('button');
     b.textContent = 'Run ' + name;
@@ -448,7 +428,6 @@
     e.target.value = '';
   });
 
-  // ---- Keypad (mouse and touch) ----
   const keyEls = [];
   LAYOUT.forEach((k) => {
     const el = document.createElement('div');
@@ -462,7 +441,6 @@
     keyEls[k] = el;
   });
 
-  // ---- Buttons: same actions as the keyboard shortcuts ----
   document.querySelectorAll('button[data-key]').forEach((b) => b.addEventListener('click', () => {
     call('web_hotkey', Number(b.dataset.key));
     canvas.focus();
@@ -473,7 +451,6 @@
   rewind.addEventListener('pointerup', setRewind(false));
   rewind.addEventListener('pointercancel', setRewind(false));
 
-  // Browsers keep audio suspended until the page is used; wake it on the first interaction
   const wakeAudio = () => {
     const ctx = Module.SDL2 && Module.SDL2.audioContext;
     if (ctx && ctx.state === 'suspended') ctx.resume();
@@ -481,14 +458,11 @@
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, wakeAudio, { capture: true }));
   canvas.addEventListener('click', () => canvas.focus());
 
-  // SDL takes mouse-wheel events on the canvas (the debugger's memory panel scrolls with it).
-  // When the debugger is closed, let the wheel scroll the page instead.
   let debuggerOpen = false;
   window.addEventListener('wheel', (e) => {
     if (e.target === canvas && !debuggerOpen) e.stopPropagation();
   }, { capture: true });
 
-  // ---- Live status from the emulator ----
   function refresh() {
     let s;
     try { s = JSON.parse(call('web_get_info')); } catch (_) { return; }

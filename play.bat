@@ -1,6 +1,4 @@
 @echo off
-rem Windows launcher: finds the MSYS2 SDL2 runtime and starts the emulator.
-rem Usage: play.bat [rom] [options]    (double-click runs Tetris)
 setlocal
 cd /d "%~dp0"
 set "PATH=C:\msys64\ucrt64\bin;%PATH%"

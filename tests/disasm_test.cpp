@@ -1,4 +1,3 @@
-// Checks the disassembler against one example of every CHIP-8 instruction.
 #include "../src/disasm.h"
 #include <iostream>
 
