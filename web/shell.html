@@ -66,7 +66,7 @@
   .screen { position: relative; border-radius: 12px; padding: 10px; background: #000;
     box-shadow: inset 0 0 0 2px #050507, inset 0 0 30px rgba(0,0,0,.9), 0 0 60px -12px rgba(255,181,71,.18); }
   /* The canvas is as large as possible while leaving room for the proof panel underneath */
-  canvas { display: block; margin: 0 auto; width: min(100%, max(360px, calc((100vh - var(--header) - 430px) * 2))) !important;
+  canvas { display: block; margin: 0 auto; width: min(100%, max(360px, calc((100vh - var(--header) - 215px) * 2))) !important;
     height: auto !important; aspect-ratio: 2 / 1; image-rendering: pixelated; outline: none; border-radius: 6px; background: #000; }
   .plate { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 4px 0; }
   .maker { font: 800 12px/1 var(--mono); letter-spacing: 3px; color: #5b6272; }
@@ -136,6 +136,7 @@
   .rom small { color: var(--faint); font: 500 10.5px/1 var(--mono); }
 
   /* ---------- Proof (fills the space under the monitor) ---------- */
+  .module.grow.proof { min-height: 110px; } /* the screen gets the height first; proof scrolls inside */
   .proof > .mod-b { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
   .proof img { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; }
   .proof h3 { margin: 0 0 8px; font-size: 15.5px; }
@@ -163,7 +164,7 @@
     .lcd div { padding: 6px 10px; }
     .key { aspect-ratio: 1.45; }
     .keys-table td { padding: 3px 0; }
-    canvas { width: min(100%, max(340px, calc((100vh - var(--header) - 390px) * 2))) !important; }
+    canvas { width: min(100%, max(340px, calc((100vh - var(--header) - 185px) * 2))) !important; }
   }
 
   /* ---------- Very short windows (laptop with browser toolbars, display scaling) ---------- */
@@ -183,7 +184,7 @@
     .slot { margin-top: 5px; }
     .rom { padding: 6px 9px; }
     .proof h3 { font-size: 14px; } .proof ul { font-size: 12.5px; }
-    canvas { width: min(100%, max(320px, calc((100vh - var(--header) - 330px) * 2))) !important; }
+    canvas { width: min(100%, max(320px, calc((100vh - var(--header) - 150px) * 2))) !important; }
   }
 
   /* ---------- Narrower desktops: slimmer side columns, key hints hidden inside side buttons ---------- */
