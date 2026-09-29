@@ -34,21 +34,66 @@ Built by **Kevin Mathew** for TatHack '26 · PS1
 
 ---
 
-## 🐞 The bugs we fixed
+## 📊 Final scorecard
+
+| 🐞 Bugs in the original code | 🔍 Issues caught by our own testing | ❌ Known broken | ✨ Features |
+|:---:|:---:|:---:|:---:|
+| **15 found · 15 fixed** | **17 found · 17 fixed** | **0** | **3 required + 21 extra** |
+
+## 🐞 The 15 bugs in the original code, all fixed
 
 The same test ROMs on the **original** code (left) and our **fixed** code (right):
 
 <img src="screenshots/01_bugfix_before_after.png" alt="Before: upside-down IBM logo, opcode test cut short, flags test blank. After: every check passes" width="80%">
 
-| | Bug | Symptom | Fix |
+| # | Bug | What went wrong | Fix |
 |---|---|---|---|
-| 🔁 | `00EE` read the stack before moving the pointer | Every subroutine return crashed | Decrement, then read |
-| ⏱️ | `SDL_Delay` after **every** instruction; timers ticked per instruction | CPU crawled, timers 10× too fast | One frame of instructions, then timers once at 60 Hz |
-| 🙃 | Rows drawn at `31 - y` | Screen upside down | Draw at `y` |
-| 🚩 | `>` instead of `>=`, VF written before the result | Wrong carry/borrow flags | `>=`, write VF last |
-| 🔢 | BCD tens digit, `FX55/65` off by one, `FX0A` never waits | Wrong scores, lost registers, skipped menus | Spec-correct versions |
+| 1 | `00EE` read the stack before moving the pointer | Every subroutine return crashed | Decrement, then read |
+| 2 | `8XY5` borrow used `>` | Wrong flag when values were equal | `>=` |
+| 3 | `8XY7` borrow used `>` | Same | `>=` |
+| 4 | VF written before the result (`8XY4/5/6/7/E`) | Result lost when VF was the target | Write VF last |
+| 5 | `FX0A` never waited for a key | Menus skipped | Wait for press **and** release |
+| 6 | `FX33` tens digit not `% 10` | Scores over 99 wrong | `(v / 10) % 10` |
+| 7 | `FX55`/`FX65` stopped one register early | Last register lost | Loop to `X` inclusive |
+| 8 | `SDL_Delay(16)` after **every** instruction | CPU ran ~60 instead of 600 instructions/s | Run a whole frame, then wait once |
+| 9 | Timers ticked per instruction | Game timing ~10× too fast | Tick once per frame (60 Hz) |
+| 10 | Frame time `1000/60` truncated to 16 ms | 62.5 Hz instead of 60 Hz | High-resolution timer |
+| 11 | Rows drawn at `31 - y` | Screen upside down | Draw at `y` |
+| 12 | Keymap stored in `uint8_t` | Keycodes could be cut short | Use `SDL_Keycode` |
+| 13 | Tone toggled every 100 samples | 220 Hz instead of 440 Hz | Phase-accurate 440 Hz oscillator |
+| 14 | No bounds on memory / key indexes | Out-of-range reads and writes | Mask addresses and keys |
+| 15 | README had Tetris' `W`/`A` swapped | Wrong instructions | Verified every key against the ROM |
 
-➡️ All 17 fixes with line numbers and reasoning: **[TECHNICAL.md](TECHNICAL.md#debugging-phase-bugs-fixed)**
+<details>
+<summary><b>🔍 The 17 issues our own testing caught, all fixed</b> (click to expand)</summary>
+
+| Area | Issue | Fix |
+|---|---|---|
+| Emulator | Accurate 1977 "display wait" made games run below the chosen speed | Fast default profile + exact **COSMAC VIP** profile |
+| Emulator | Keys and rewind stuck after alt-tab | Release everything when the window loses focus |
+| Emulator | Breakpoints kept after loading another ROM | Cleared on ROM load |
+| Emulator | Rewind left a smeared trail | Phosphor fade keeps running while rewinding |
+| Emulator | Loading a savestate left ghost pixels | Screen fade reset on load |
+| Emulator | Screenshot key wrote to the wrong file in scripted runs | Separate capture path |
+| Emulator | SUPER-CHIP games ran at the wrong speed (Eaty looked frozen) | Authors' published speed and quirks, picked by CRC32 |
+| Emulator | Blinky needs different quirks than Tetris and Pong | ROM database selects SCHIP quirks automatically |
+| Web | Black screen on launch | Main object made `static` (browser leaves `main()` early) |
+| Web | Game screen squashed square | Fixed 2:1 aspect, non-resizable canvas |
+| Web | Mouse wheel over the screen couldn't scroll the page | Wheel goes to the page unless the debugger is open |
+| Web | Browsers block sound until the first click | Audio resumed on the first click or key press |
+| Web | Panels collapsed on narrow screens | Stretch rules limited to desktop |
+| Web | Short laptop windows fell back to the stacked layout | Three columns kept at every desktop size |
+| Web | Black bars beside the screen, small debugger text | Screen fills the monitor width |
+| Web | Browser kept serving the old version after updates | Cache refresh documented (`Ctrl+F5`) |
+| Repo | Windows line endings would fail `make test` on a fresh clone | `.gitattributes` pins line endings |
+
+</details>
+
+**Known limitations (not bugs):** legacy SUPER-CHIP low-res scrolling isn't modelled (modern mode is) ·
+XO-CHIP colour planes and audio patterns aren't implemented · browser savestates last until reload ·
+Tetris (1991) has no game-over in the ROM itself.
+
+➡️ Line numbers and full reasoning for every fix: **[TECHNICAL.md](TECHNICAL.md#debugging-phase-bugs-fixed)**
 
 ---
 
@@ -131,16 +176,41 @@ driven by the keyboard (`H` shows every key).
 
 ---
 
-## ✨ Features
+## ✨ Features: 3 required + 21 extra
 
-| Required | | Extra | |
-|---|---|---|---|
-| ⚡ **Speed control** | `-` `=` · 60 to 60,000 instructions/s | ⏮️ **Time-travel debugger** | `F4` steps *backwards* |
-| 💾 **Savestates** | `F5` / `F9` · 10 slots | 🔥 **Memory heat-map** | `F3` · watch code run |
-| 🎨 **8 palettes** | `Tab` · Green Screen, Amber CRT, Neon… | 🎮 **Control detection** | shows which keys a game uses |
-| | | ⏪ **Rewind** | hold `Backspace` |
-| | | 🕹️ **SUPER-CHIP** | 128×64 hi-res games |
-| | | 🌐 **Browser version** | same C++ in WebAssembly |
+**Required**
+
+| Feature | Key | What it does |
+|---|---|---|
+| ⚡ Speed control | `-` `=` `0` | 60 to 60,000 instructions per second, changed live |
+| 💾 Savestates | `F5` `F9` `[` `]` | Saves the whole machine to a file; 10 slots per game |
+| 🎨 Colour palettes | `Tab` | 8 palettes incl. Classic Green Screen, Amber CRT, Neon High-Contrast |
+
+**Extra**
+
+| | Feature | What it does |
+|---|---|---|
+| 🐛 | **Time-travel debugger** (`F4`) | Steps *backwards* through instructions, restoring the exact machine state |
+| 🐛 | **Memory heat-map** (`F3`) | All 4 KB of memory lit up as code runs, data is read and values are written |
+| 🐛 | Debugger (`F1`) | Live registers, stack, memory with sprite preview, keypad |
+| 🐛 | Breakpoints and stepping (`F7` `F6` `N`) | Stop at an address; step one instruction or one frame |
+| 🐛 | Disassembler | Every CHIP-8 and SUPER-CHIP instruction shown as readable assembly |
+| 🎮 | **Automatic control detection** | Shows which keys a game uses, even for unknown ROMs |
+| 🎮 | Rewind (hold `Backspace`) | Runs the last 10 seconds backwards |
+| 🎮 | ROM auto-detection | Recognises games by checksum and applies their correct settings |
+| 🎮 | Pause, frame step, reset (`P` `N` `F8`) | Full control over execution |
+| 🎮 | Drag-and-drop ROMs | Drop a `.ch8` file on the window to play it |
+| 🕹️ | SUPER-CHIP support | 128×64 hi-res, 16×16 sprites, scrolling, big font |
+| 🕹️ | 4 quirk profiles (`F2`) | CHIP-8, COSMAC VIP, SUPER-CHIP, XO-CHIP behaviour |
+| 📺 | Phosphor fade and scanlines (`G` `L`) | Removes CHIP-8 flicker; optional CRT look |
+| 🔊 | 4 sound waveforms, test tone, mute (`M` `B` `U`) | Square, triangle, sine, sawtooth |
+| 📸 | Screenshots (`F12`) and help screen (`H`) | Save the screen; see every key |
+| 🌐 | **Browser version** | The same C++ compiled to WebAssembly, [live here](https://kevinmathew47.github.io/CHIP-8-EMULATOR) |
+| 🌐 | Game library and ROM upload | One-click games, SUPER-CHIP titles and test ROMs, or open your own |
+| 🌐 | On-screen touch keypad | Plays on phones and tablets; used keys glow green |
+| ✅ | Automated test suite (`make test`) | 13 checks against public test ROMs, no window needed |
+| 🎬 | Scripted input and fixed seed | `--press`, `--seed`, `--capture` make any run repeatable |
+| 🔏 | Authorship signature | Built-by credit in the app and web page, stamped into every savestate |
 
 | Time-travel debugging | Memory heat-map |
 |---|---|

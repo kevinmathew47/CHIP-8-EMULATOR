@@ -126,14 +126,45 @@ verified by the test ROMs in `make test` (see [Testing](#testing)).
 | 12 | `main.cpp` line 20 | `uint8_t keymap[]` stores `SDL_Keycode` values | Keycodes above 255 are truncated, which risks wrong key matches | Store `SDL_Keycode` |
 | 13 | `main.cpp` line 48 | Square wave toggled every 100 samples at 44.1 kHz | 220 Hz tone although the README says 440 Hz | Phase-accumulator oscillator at exactly 440 Hz (and now 4 selectable waveforms) |
 
-### Found during our own play-testing
+### Robustness and documentation
 
-| # | Problem | Fix |
-|---|---|---|
-| 14 | Memory reads/writes (`DXYN`, `FX33`, `FX55`, `FX65`) and the key index in `EX9E`/`EXA1` could go past the end of their arrays for unusual values of `I`/`VX` | All addresses masked to 12 bits (`& 0xFFF`) and key indices to 4 bits |
-| 15 | Original-hardware "display wait" made every game run slower than the chosen speed (Pong ran 6.3 of 10 requested instructions per frame) | Split into a playable **CHIP-8** default and an exact **COSMAC VIP** profile |
-| 16 | Keys (and rewind) stayed "held" after alt-tabbing, because the key-up event goes to the other window | Release all keys when the window loses focus |
-| 17 | The README's Tetris controls were wrong | Checked by pressing each key in the ROM (see [Controls](#controls)) |
+| # | Where (original) | Bug | Symptom | Fix |
+|---|---|---|---|---|
+| 14 | `DXYN`, `FX33`, `FX55`, `FX65`, `EX9E`, `EXA1` | Memory addresses and key indexes were not bounded | Unusual values of `I`/`VX` read or wrote past the end of the arrays | Addresses masked to 12 bits (`& 0xFFF`), key indexes to 4 bits |
+| 15 | `README.md` | Tetris controls listed `W` as drop and `A` as left | Players pressed the wrong keys | Verified by pressing every key against the ROM: `W` left, `A` drop |
+
+**Total: 15 bugs in the original code, 15 fixed.**
+
+### Issues caught by our own testing (17, all fixed)
+
+These were not in the original code; they came up while we built and tested new work.
+
+| # | Area | Issue | Fix |
+|---|---|---|---|
+| 1 | Emulator | The exact 1977 "display wait" made games run below the chosen speed (Pong ran 6.3 of 10 requested instructions per frame) | Fast **CHIP-8** default plus an exact **COSMAC VIP** profile |
+| 2 | Emulator | Keys and rewind stayed held after alt-tab (the key-up went to another window) | Release all keys when the window loses focus |
+| 3 | Emulator | Breakpoints survived loading a different ROM | Cleared on ROM load |
+| 4 | Emulator | Rewind left a smeared trail because the phosphor fade froze | Fade keeps running while rewinding |
+| 5 | Emulator | Loading a savestate left faint ghost pixels | Phosphor buffer reset on load |
+| 6 | Emulator | `F12` in a scripted `--capture` run wrote to the capture file | Separate screenshot path |
+| 7 | Emulator | SUPER-CHIP games ran at 30 instead of their authors' 200 instructions per frame (Eaty looked frozen) | Published speed and quirks applied by CRC32 |
+| 8 | Emulator | Blinky only works with SUPER-CHIP shift/load behaviour | ROM database selects it automatically |
+| 9 | Web | Black screen: in the browser `main()` returns early and the app object lived on its stack | Made `static` |
+| 10 | Web | Canvas followed the page size and became square | Fixed-size window, CSS 2:1 aspect ratio |
+| 11 | Web | SDL captured the mouse wheel, so the page couldn't scroll over the screen | Wheel passed to the page unless the debugger is open |
+| 12 | Web | Browsers keep audio suspended until user input | Audio context resumed on the first click or key |
+| 13 | Web | Panels collapsed to zero height on narrow screens | Flex-grow rules limited to the desktop layout |
+| 14 | Web | Windows shorter than 700 px (laptops with toolbars, display scaling) fell back to the stacked layout | Width-only breakpoint, compact tiers for short windows |
+| 15 | Web | Screen capped by height left black bars and small debugger text | Screen takes the height first; proof panel scrolls |
+| 16 | Web | Browsers served the cached old build after updates | Documented `Ctrl+F5`; verified with cache-bypassing reloads |
+| 17 | Repo | Git converted line endings on Windows clones, so `make test` would fail | `.gitattributes` pins LF for text, CRLF for `.bat` |
+
+### Known limitations
+
+- Legacy SUPER-CHIP low-res scrolling (half-pixel) is not modelled; modern mode is.
+- XO-CHIP is partial: scrolling and quirks work, colour planes and audio patterns do not.
+- Browser savestates live in memory and are lost on reload.
+- Linux and macOS builds use the standard `sdl2-config` flow but were not tested on real machines.
 
 ---
 
